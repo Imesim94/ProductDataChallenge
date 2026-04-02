@@ -7,12 +7,12 @@ logger = logging.getLogger(__name__)
 
 def get_fast_cooccurrence(df: pd.DataFrame, item_col: str, group_col: str, top_n: int = 50):
     """
-    Principal AI Scientist Level: Matrix-based co-occurrence with Density Filtering.
+    Matrix-based co-occurrence with Density Filtering.
     """
     if df.empty:
         return pd.DataFrame()
 
-    # --- NEW: DENSITY FILTERING ---
+    
     # Filter out groups (baskets/sessions) that are too large (e.g., > 100 items)
     # These are usually store-wide catalogs, not specific "bought together" signals.
     group_sizes = df.groupby(group_col).size()
