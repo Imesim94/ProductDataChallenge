@@ -1,0 +1,39 @@
+# ============================================================================
+# Data Configuration - ProductDataChallenge
+# ============================================================================
+
+paths:
+  raw_sales: "data/raw/ProductSales-ThanksGivingWeek.csv"
+  raw_taxonomy: "data/raw/ProductTaxonomy.csv"
+  processed_sales: "data/processed/sales_cleaned.parquet"
+  processed_taxonomy: "data/processed/taxonomy_cleaned.parquet"
+  merged: "data/processed/sales_with_taxonomy.parquet"
+  model_artifacts: "models/"
+
+thanksgiving_2021:
+  # Thanksgiving week: Nov 22 (Mon) - Nov 29 (Cyber Monday)
+  start_date: "2021-11-22"
+  end_date: "2021-11-29"
+  black_friday: "2021-11-26"
+  cyber_monday: "2021-11-29"
+  thanksgiving_day: "2021-11-25"
+
+taxonomy:
+  # Hierarchy separator in Google Merchant taxonomy
+  separator: " > "
+  # Minimum depth for valid taxonomy (e.g., "Apparel & Accessories > Clothing")
+  min_depth: 2
+  # Top-level category used for classification target
+  target_level: 1  # 0-indexed: level 0 = root, level 1 = first sub-category
+
+sales:
+  # Columns expected in raw sales data
+  columns:
+    - action_id
+    - sqldate
+    - item_name
+    - country
+    - payout_type
+    - saleamt
+    - commission
+  date_format: "%Y/%m/%d"

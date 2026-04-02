@@ -1,0 +1,79 @@
+# ============================================================================
+# Docker Compose - Full MLOps Stack
+# ============================================================================
+# Services:
+#   api       - FastAPI classifier serving (port 8000)
+#   mlflow    - Experiment tracking UI (port 5000)
+#   streamlit - Interactive dashboard (port 8501)
+#
+# Usage:
+#   docker compose up -d              # Start all services
+#   docker compose up api             # Start API only
+#   docker compose logs -f api        # Stream API logs
+#   docker compose down               # Stop all services
+# ============================================================================
+
+version: "3.9"
+
+services:
+  # --------------------------------------------------------------------------
+  # FastAPI Classifier API
+  # --------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: product-classifier-api
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_PATH=models/classifier_pipeline.joblib
+      - PYTHONPATH=/app
+    volumes:
+      - ./models:/app/models:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # --------------------------------------------------------------------------
+  # MLflow Tracking Server
+  # --------------------------------------------------------------------------
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.10.0
+    container_name: mlflow-tracking
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_TRACKING_URI=sqlite:///mlflow/mlflow.db
+    volumes:
+      - ./mlflow_data:/mlflow
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:///mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0
+      --port 5000
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Streamlit Dashboard
+  # --------------------------------------------------------------------------
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    container_name: product-dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+      - PYTHONPATH=/app
+    volumes:
+      - ./data:/app/data:ro
+      - ./models:/app/models:ro
+    depends_on:
+      - api
+    restart: unless-stopped
